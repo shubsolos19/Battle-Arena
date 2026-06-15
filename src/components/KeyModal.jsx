@@ -1,0 +1,98 @@
+import { useState } from 'react';
+import { getKeys, saveKeys } from '../utils/storage';
+
+export default function KeyModal({ isOpen, onClose, onSave }) {
+  const existingKeys = getKeys();
+  const [openRouterKey, setOpenRouterKey] = useState(existingKeys.openRouterKey);
+  const [huggingFaceKey, setHuggingFaceKey] = useState(existingKeys.huggingFaceKey);
+
+  if (!isOpen) return null;
+
+  const filledCount = [openRouterKey.trim(), huggingFaceKey.trim()].filter(k => k.length > 0).length;
+
+  const handleSave = () => {
+    if (filledCount < 1) return;
+    saveKeys(openRouterKey.trim(), huggingFaceKey.trim());
+    onSave();
+  };
+
+  const canSave = filledCount >= 1;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="modal-icon">🔑</div>
+          <h2 className="modal-title">API Keys</h2>
+          <p className="modal-subtitle">
+            Your keys are stored locally in your browser. Never sent to any server except the AI providers.
+          </p>
+          <p className="modal-hint">
+            Enter at least 1 key to start. With 2 keys, models battle cross-provider!
+          </p>
+        </div>
+
+        <div className="modal-body">
+          <div className="input-group">
+            <label htmlFor="openrouter-key" className="input-label">
+              <span className="label-dot openrouter-dot"></span>
+              OpenRouter API Key
+            </label>
+            <input
+              id="openrouter-key"
+              type="password"
+              value={openRouterKey}
+              onChange={(e) => setOpenRouterKey(e.target.value)}
+              placeholder="sk-or-..."
+              className="key-input"
+              autoComplete="off"
+            />
+            <a
+              href="https://openrouter.ai/keys"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="key-link"
+            >
+              Get a free key →
+            </a>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="huggingface-key" className="input-label">
+              <span className="label-dot huggingface-dot"></span>
+              Hugging Face API Token
+            </label>
+            <input
+              id="huggingface-key"
+              type="password"
+              value={huggingFaceKey}
+              onChange={(e) => setHuggingFaceKey(e.target.value)}
+              placeholder="hf_..."
+              className="key-input"
+              autoComplete="off"
+            />
+            <a
+              href="https://huggingface.co/settings/tokens"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="key-link"
+            >
+              Get a free token →
+            </a>
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button
+            id="save-keys-btn"
+            onClick={handleSave}
+            disabled={!canSave}
+            className="save-btn"
+          >
+            Save & Generate ⚡
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
