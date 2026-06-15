@@ -5,6 +5,24 @@ import BattleView from './components/BattleView';
 import { hasKeys, getKeys } from './utils/storage';
 import { pickRandomModels } from './utils/modelPicker';
 import { callModel } from './utils/api';
+import { OPENROUTER_MODELS, HUGGINGFACE_MODELS } from './constants/models';
+
+async function generateWithModelFallback(initialModel, allModels, callFn, provider, apiKey, systemPrompt, userPrompt) {
+  const otherModels = allModels.filter(m => m.id !== initialModel.id).sort(() => Math.random() - 0.5);
+  const attempts = [initialModel, ...otherModels].slice(0, 3);
+  
+  for (const model of attempts) {
+    try {
+      const result = await callFn(provider, apiKey, model.id, systemPrompt, userPrompt);
+      return { result, model: { ...model, provider } }; 
+    } catch (err) {
+      console.warn(`Model ${model.name || model.id} failed, trying fallback...`, err);
+      await new Promise(r => setTimeout(r, 3000));
+      continue; 
+    }
+  }
+  throw new Error("All 3 models failed to respond.");
+}
 
 // States: landing | loading | battle | result
 export default function App() {
@@ -20,7 +38,7 @@ export default function App() {
   const [errorB, setErrorB] = useState(null);
   const [loadingA, setLoadingA] = useState(false);
   const [loadingB, setLoadingB] = useState(false);
-  const [renderType, setRenderType] = useState('iframe');
+  const [renderType, setRenderType] = useState('text');
   const [winner, setWinner] = useState(null);
   const [currentPrompt, setCurrentPrompt] = useState('');
 
@@ -29,7 +47,7 @@ export default function App() {
 
   const startGeneration = useCallback(async (prompt, category) => {
     const keys = getKeys();
-    const { modelA: pickedA, modelB: pickedB } = pickRandomModels();
+    const { modelA: pickedA, modelB: pickedB } = pickRandomModels(category.id);
 
     // Set up state
     setModelA(pickedA);
@@ -52,8 +70,9 @@ export default function App() {
       model.provider === 'openrouter' ? keys.openRouterKey : keys.huggingFaceKey;
 
     // Fire both calls in parallel
-    const callA = callModel(pickedA.provider, keyForModel(pickedA), pickedA.id, systemPrompt, prompt)
-      .then((result) => {
+    const callA = generateWithModelFallback(pickedA, OPENROUTER_MODELS, callModel, pickedA.provider, keyForModel(pickedA), systemPrompt, prompt)
+      .then(({ result, model }) => {
+        setModelA(model);
         setOutputA(result);
         setLoadingA(false);
       })
@@ -62,8 +81,9 @@ export default function App() {
         setLoadingA(false);
       });
 
-    const callB = callModel(pickedB.provider, keyForModel(pickedB), pickedB.id, systemPrompt, prompt)
-      .then((result) => {
+    const callB = generateWithModelFallback(pickedB, HUGGINGFACE_MODELS, callModel, pickedB.provider, keyForModel(pickedB), systemPrompt, prompt)
+      .then(({ result, model }) => {
+        setModelB(model);
         setOutputB(result);
         setLoadingB(false);
       })
@@ -115,12 +135,17 @@ export default function App() {
       {/* Header */}
       <header className="app-header">
         <div className="header-left">
-          <h1 className="app-logo">
+          <h1
+            className="app-logo"
+            onClick={handleTryAgain}
+            style={{ cursor: 'pointer' }}
+            title="Go to main page"
+          >
             <span className="logo-icon">⚔️</span>
             <span className="logo-text">DuelAI</span>
           </h1>
           {phase === 'landing' && (
-            <p className="app-subtitle">Two models. One prompt. You decide.</p>
+            <p className="app-subtitle"></p>
           )}
         </div>
         <button
@@ -139,12 +164,12 @@ export default function App() {
           <div className="landing-container">
             <div className="landing-hero">
               <h2 className="hero-title">
-                Pit two AI models against each other
+                The AI Arena
               </h2>
               <p className="hero-desc">
-                Type a prompt, pick a category, and watch two AI models compete.
+                Two models, One prompt
                 <br />
-                You decide who wins.
+                You decide
               </p>
             </div>
             <PromptBox onSubmit={handleSubmit} disabled={false} />

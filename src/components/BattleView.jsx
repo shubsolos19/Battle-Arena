@@ -111,6 +111,25 @@ export default function BattleView({
               <span className="vote-arrow">👈</span>
               <span className="vote-name">{modelA.name}</span>
             </button>
+            
+            <button
+              id="vote-tie-btn"
+              onClick={() => onVote({ id: 'tie', name: 'Both are good' })}
+              className="vote-btn vote-btn-tie"
+              disabled={!outputA || !outputB}
+            >
+              <span className="vote-name">Both are good 🤝</span>
+            </button>
+
+            <button
+              id="vote-neither-btn"
+              onClick={() => onVote({ id: 'neither', name: 'Both are bad' })}
+              className="vote-btn vote-btn-neither"
+              disabled={!outputA || !outputB}
+            >
+              <span className="vote-name">Both are bad 👎</span>
+            </button>
+
             <button
               id="vote-b-btn"
               onClick={() => onVote(modelB)}

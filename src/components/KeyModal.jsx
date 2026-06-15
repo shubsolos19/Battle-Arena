@@ -11,12 +11,12 @@ export default function KeyModal({ isOpen, onClose, onSave }) {
   const filledCount = [openRouterKey.trim(), huggingFaceKey.trim()].filter(k => k.length > 0).length;
 
   const handleSave = () => {
-    if (filledCount < 1) return;
+    if (filledCount < 2) return;
     saveKeys(openRouterKey.trim(), huggingFaceKey.trim());
     onSave();
   };
 
-  const canSave = filledCount >= 1;
+  const canSave = filledCount === 2;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -28,7 +28,7 @@ export default function KeyModal({ isOpen, onClose, onSave }) {
             Your keys are stored locally in your browser. Never sent to any server except the AI providers.
           </p>
           <p className="modal-hint">
-            Enter at least 1 key to start. With 2 keys, models battle cross-provider!
+            Both keys are required. Model A is strictly OpenRouter, and Model B is strictly Hugging Face.
           </p>
         </div>
 

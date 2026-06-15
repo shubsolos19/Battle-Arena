@@ -68,19 +68,6 @@ export default function OutputRenderer({ output, renderType, isLoading, error, m
     );
   }
 
-  // Iframe-rendered categories
-  if (renderType === 'iframe') {
-    return (
-      <div className="output-renderer iframe-container">
-        <iframe
-          srcDoc={cleanedOutput}
-          sandbox="allow-scripts"
-          title={`Output from ${modelName}`}
-          className="output-iframe"
-        />
-      </div>
-    );
-  }
 
   // SVG rendered directly
   if (renderType === 'svg') {
@@ -94,7 +81,7 @@ export default function OutputRenderer({ output, renderType, isLoading, error, m
     );
   }
 
-  // Plain text / ASCII / TTS / Image prompt
+  // Plain text / ASCII / TTS
   if (renderType === 'text') {
     return (
       <div className="output-renderer text-container">

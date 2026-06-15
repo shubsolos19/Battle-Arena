@@ -14,12 +14,12 @@ export function saveKeys(openRouterKey, huggingFaceKey) {
 }
 
 /**
- * Returns true if at least 1 key is configured.
- * With 1 key we can still battle two models from the same provider.
+ * Returns true if both keys are configured.
+ * Both are required now that Model A is always OpenRouter and Model B is HuggingFace.
  */
 export function hasKeys() {
   const { openRouterKey, huggingFaceKey } = getKeys();
-  return openRouterKey.length > 0 || huggingFaceKey.length > 0;
+  return openRouterKey.length > 0 && huggingFaceKey.length > 0;
 }
 
 /**
