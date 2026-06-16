@@ -61,7 +61,7 @@ export default function PromptBox({ onSubmit, disabled }) {
               <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-7 left-7  blur-[1px]" />
             </div>
             {!isDesktop && (
-              <div className="absolute h-14 w-14 bg-[#ff6f00]/50 rounded-full blur-[12px] animate-pulse" />
+              <div className="blob-fallback" />
             )}
             {isDesktop && (
               <>
