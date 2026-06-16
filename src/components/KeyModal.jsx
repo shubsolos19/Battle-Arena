@@ -25,10 +25,10 @@ export default function KeyModal({ isOpen, onClose, onSave }) {
           <div className="modal-icon">🔑</div>
           <h2 className="modal-title">API Keys</h2>
           <p className="modal-subtitle">
-            Your keys are stored locally in your browser. Never sent to any server except the AI providers.
+            Your keys are stored locally in your browser.
           </p>
           <p className="modal-hint">
-            Both keys are required. Model A is strictly OpenRouter, and Model B is strictly Hugging Face.
+            Both keys are required.
           </p>
         </div>
 
@@ -62,6 +62,9 @@ export default function KeyModal({ isOpen, onClose, onSave }) {
               <span className="label-dot huggingface-dot"></span>
               Hugging Face API Token
             </label>
+            <div className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 p-2.5 rounded-md mb-3 mt-1 leading-relaxed">
+              <strong>Important:</strong> When creating your token, make sure to tick the option <strong>"Make calls to Inference Providers"</strong> so the key can work.
+            </div>
             <input
               id="huggingface-key"
               type="password"
