@@ -142,7 +142,7 @@ export default function App() {
             title="Go to main page"
           >
             <span className="logo-icon">⚔️</span>
-            <span className="logo-text">DuelAI</span>
+            <span className="logo-text">Modelfight</span>
           </h1>
           {phase === 'landing' && (
             <p className="app-subtitle"></p>
