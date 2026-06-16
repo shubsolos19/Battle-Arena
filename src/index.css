@@ -201,6 +201,20 @@ body {
 /* ═══════════════════════════════════════════════
    PROMPT BOX
    ═══════════════════════════════════════════════ */
+.prompt-box-focused {
+  position: relative;
+  background: linear-gradient(#040404, #040404) padding-box,
+              linear-gradient(90deg, hsl(32, 100%, 83%), hsl(4, 32%, 30%), hsl(25, 60%, 50%), hsl(0, 100%, 10%)) border-box !important;
+  border: 1px solid transparent !important;
+  background-size: 200% 100% !important;
+  animation: borderFlow 3s linear infinite !important;
+}
+
+@keyframes borderFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
 .prompt-box {
   width: 100%;
 }

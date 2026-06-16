@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CATEGORIES } from '../constants/categories';
-import { LiquidMetal, PulsingBorder } from '@paper-design/shaders-react';
+import { LiquidMetal } from '@paper-design/shaders-react';
 import { motion } from 'framer-motion';
 import { Brain, Link, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
@@ -11,6 +11,13 @@ export default function PromptBox({ onSubmit, disabled }) {
   const [prompt, setPrompt] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0].id);
   const [isFocused, setIsFocused] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth > 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleSubmit = () => {
     if (!prompt.trim() || disabled) return;
@@ -53,40 +60,44 @@ export default function PromptBox({ onSubmit, disabled }) {
               <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-5 left-9 blur-[0.8px]" />
               <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-7 left-7  blur-[1px]" />
             </div>
-            <LiquidMetal
-              style={{ height: 80, width: 80, filter: "blur(14px)", position: "absolute" }}
-              colorBack="hsl(0, 0%, 0%, 0)"
-              colorTint="hsl(29, 77%, 49%)"
-              repetition={4}
-              softness={0.5}
-              shiftRed={0.3}
-              shiftBlue={0.3}
-              distortion={0.1}
-              contour={1}
-              shape="circle"
-              offsetX={0}
-              offsetY={0}
-              scale={0.58}
-              rotation={50}
-              speed={5}
-            />
-            <LiquidMetal
-              style={{ height: 80, width: 80 }}
-              colorBack="hsl(0, 0%, 0%, 0)"
-              colorTint="hsl(29, 77%, 49%)"
-              repetition={4}
-              softness={0.5}
-              shiftRed={0.3}
-              shiftBlue={0.3}
-              distortion={0.1}
-              contour={1}
-              shape="circle"
-              offsetX={0}
-              offsetY={0}
-              scale={0.58}
-              rotation={50}
-              speed={5}
-            />
+            {isDesktop && (
+              <>
+                <LiquidMetal
+                  style={{ height: 80, width: 80, filter: "blur(14px)", position: "absolute" }}
+                  colorBack="hsl(0, 0%, 0%, 0)"
+                  colorTint="hsl(29, 77%, 49%)"
+                  repetition={4}
+                  softness={0.5}
+                  shiftRed={0.3}
+                  shiftBlue={0.3}
+                  distortion={0.1}
+                  contour={1}
+                  shape="circle"
+                  offsetX={0}
+                  offsetY={0}
+                  scale={0.58}
+                  rotation={50}
+                  speed={5}
+                />
+                <LiquidMetal
+                  style={{ height: 80, width: 80 }}
+                  colorBack="hsl(0, 0%, 0%, 0)"
+                  colorTint="hsl(29, 77%, 49%)"
+                  repetition={4}
+                  softness={0.5}
+                  shiftRed={0.3}
+                  shiftBlue={0.3}
+                  distortion={0.1}
+                  contour={1}
+                  shape="circle"
+                  offsetX={0}
+                  offsetY={0}
+                  scale={0.58}
+                  rotation={50}
+                  speed={5}
+                />
+              </>
+            )}
           </motion.div>
 
           {/* Greeting Text */}
@@ -109,51 +120,8 @@ export default function PromptBox({ onSubmit, disabled }) {
         </div>
 
         <div className="relative">
-          <motion.div
-            className="absolute w-full h-full z-0 flex items-center justify-center pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isFocused ? 1 : 0 }}
-            transition={{
-              duration: 0.8, 
-            }}
-          >
-            <PulsingBorder
-              style={{ height: "146.5%", minWidth: "143%" }}
-              colorBack="hsl(0, 0%, 0%)"
-              roundness={0.18}
-              thickness={0}
-              softness={0}
-              intensity={0.3}
-              bloom={2}
-              spots={2}
-              spotSize={0.25}
-              pulse={0}
-              smoke={0.35}
-              smokeSize={0.4}
-              scale={0.7}
-              rotation={0}
-              offsetX={0}
-              offsetY={0}
-              speed={1}
-              colors={[
-                "hsl(29, 70%, 37%)",
-                "hsl(32, 100%, 83%)",
-                "hsl(4, 32%, 30%)",
-                "hsl(25, 60%, 50%)",
-                "hsl(0, 100%, 10%)",
-              ]}
-            />
-          </motion.div>
-
-          <motion.div
-            className="relative bg-[#040404] rounded-2xl p-5 z-10"
-            animate={{
-              borderColor: isFocused ? "transparent" : "#3D3D3D",
-            }}
-            transition={{
-              duration: 0.6,
-              delay: 0.1,
-            }}
+          <div
+            className={`relative rounded-2xl p-5 z-10 transition-colors duration-500 bg-[#040404] ${isFocused ? 'prompt-box-focused border-transparent' : 'border-[#3D3D3D]'}`}
             style={{
               borderWidth: "1px",
               borderStyle: "solid",
@@ -218,7 +186,7 @@ export default function PromptBox({ onSubmit, disabled }) {
                 </Button>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>
