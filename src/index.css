@@ -215,29 +215,6 @@ body {
   100% { background-position: 200% 50%; }
 }
 
-.blob-fallback {
-  position: absolute;
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(45deg, #ff8c00, #ff3d00);
-  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-  filter: blur(10px);
-  animation: morphBlob 4s ease-in-out infinite alternate;
-  z-index: 0;
-  opacity: 0.6;
-}
-
-@keyframes morphBlob {
-  0% {
-    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-    transform: rotate(0deg) scale(1);
-  }
-  100% {
-    border-radius: 60% 40% 30% 70% / 60% 50% 40% 50%;
-    transform: rotate(360deg) scale(1.1);
-  }
-}
-
 .prompt-box {
   width: 100%;
 }

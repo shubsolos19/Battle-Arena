@@ -11,13 +11,6 @@ export default function PromptBox({ onSubmit, disabled }) {
   const [prompt, setPrompt] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0].id);
   const [isFocused, setIsFocused] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
-
-  useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth > 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleSubmit = () => {
     if (!prompt.trim() || disabled) return;
@@ -60,13 +53,8 @@ export default function PromptBox({ onSubmit, disabled }) {
               <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-5 left-9 blur-[0.8px]" />
               <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-7 left-7  blur-[1px]" />
             </div>
-            {!isDesktop && (
-              <div className="blob-fallback" />
-            )}
-            {isDesktop && (
-              <>
-                <LiquidMetal
-                  style={{ height: 80, width: 80, filter: "blur(14px)", position: "absolute" }}
+            <LiquidMetal
+              style={{ height: 80, width: 80, filter: "blur(14px)", position: "absolute" }}
                   colorBack="hsl(0, 0%, 0%, 0)"
                   colorTint="hsl(29, 77%, 49%)"
                   repetition={4}
@@ -99,8 +87,6 @@ export default function PromptBox({ onSubmit, disabled }) {
                   rotation={50}
                   speed={5}
                 />
-              </>
-            )}
           </motion.div>
 
           {/* Greeting Text */}
