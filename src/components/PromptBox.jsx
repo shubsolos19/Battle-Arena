@@ -39,7 +39,7 @@ export default function PromptBox({ onSubmit, disabled }) {
           {/* Shader Circle */}
           <motion.div
             id="circle-ball"
-            className="relative flex items-center justify-center z-10"
+            className="relative flex items-center justify-center z-10 w-20 h-20 shrink-0"
             animate={{
               y: isFocused ? 50 : 0,
               opacity: isFocused ? 0 : 100,
@@ -60,6 +60,9 @@ export default function PromptBox({ onSubmit, disabled }) {
               <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-5 left-9 blur-[0.8px]" />
               <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-7 left-7  blur-[1px]" />
             </div>
+            {!isDesktop && (
+              <div className="absolute h-14 w-14 bg-[#ff6f00]/50 rounded-full blur-[12px] animate-pulse" />
+            )}
             {isDesktop && (
               <>
                 <LiquidMetal
@@ -102,7 +105,7 @@ export default function PromptBox({ onSubmit, disabled }) {
 
           {/* Greeting Text */}
           <motion.p
-            className="text-white/40 text-sm font-light z-10 ml-4"
+            className="text-white/40 text-xs sm:text-sm font-light z-10 ml-0 sm:ml-4 flex-1"
             animate={{
               y: isFocused ? 50 : 0,
               opacity: isFocused ? 0 : 100,
