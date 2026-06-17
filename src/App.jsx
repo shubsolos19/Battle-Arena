@@ -6,6 +6,8 @@ import { hasKeys, getKeys } from './utils/storage';
 import { pickRandomModels } from './utils/modelPicker';
 import { callModel } from './utils/api';
 import { OPENROUTER_MODELS, HUGGINGFACE_MODELS } from './constants/models';
+import { supabase } from './utils/supabaseClient';
+import Leaderboard from './components/Leaderboard';
 
 async function generateWithModelFallback(initialModel, allModels, callFn, provider, apiKey, systemPrompt, userPrompt) {
   const otherModels = allModels.filter(m => m.id !== initialModel.id).sort(() => Math.random() - 0.5);
@@ -41,6 +43,7 @@ export default function App() {
   const [renderType, setRenderType] = useState('text');
   const [winner, setWinner] = useState(null);
   const [currentPrompt, setCurrentPrompt] = useState('');
+  const [currentCategory, setCurrentCategory] = useState(null);
 
   // Pending submission (saved when keys need to be entered)
   const [pendingSubmit, setPendingSubmit] = useState(null);
@@ -58,10 +61,11 @@ export default function App() {
     setErrorB(null);
     setLoadingA(true);
     setLoadingB(true);
-    setRenderType(category.renderType);
+    setPhase('battle');
     setWinner(null);
     setCurrentPrompt(prompt);
-    setPhase('battle');
+    setCurrentCategory(category);
+    setRenderType(category.renderType);
 
     const systemPrompt = category.systemPrompt.replace('{prompt}', prompt);
 
@@ -114,7 +118,29 @@ export default function App() {
 
   const handleVote = useCallback((model) => {
     setWinner(model);
-  }, []);
+    
+    // Asynchronously record vote
+    if (modelA && modelB && currentCategory) {
+      let voteResult;
+      if (model.id === modelA.id) voteResult = 'a';
+      else if (model.id === modelB.id) voteResult = 'b';
+      else voteResult = model.id; // 'tie' or 'neither'
+      
+      if (voteResult === 'neither') voteResult = 'both_bad';
+
+      supabase.from('votes').insert({
+        category: currentCategory.id || currentCategory,
+        model_a_id: modelA.id,
+        model_a_provider: modelA.provider,
+        model_b_id: modelB.id,
+        model_b_provider: modelB.provider,
+        winner: voteResult
+      }).catch(err => {
+        // silent fail
+        console.error("Failed to record vote:", err);
+      });
+    }
+  }, [modelA, modelB, currentCategory]);
 
   const handleTryAgain = useCallback(() => {
     setPhase('landing');
@@ -148,14 +174,22 @@ export default function App() {
             <p className="app-subtitle"></p>
           )}
         </div>
-        <button
-          id="update-keys-btn"
-          onClick={() => setShowKeyModal(true)}
-          className="update-keys-btn"
-          title="Update API Keys"
-        >
-          🔑 <span className="keys-btn-text">Keys</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setPhase('leaderboard')}
+            className="text-zinc-400 hover:text-white transition-colors text-sm font-medium"
+          >
+            🏆 Leaderboard
+          </button>
+          <button
+            id="update-keys-btn"
+            onClick={() => setShowKeyModal(true)}
+            className="update-keys-btn"
+            title="Update API Keys"
+          >
+            🔑 <span className="keys-btn-text">Keys</span>
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}
@@ -191,7 +225,12 @@ export default function App() {
             winner={winner}
             prompt={currentPrompt}
             onTryAgain={handleTryAgain}
+            onNewPrompt={handleSubmit}
           />
+        )}
+
+        {phase === 'leaderboard' && (
+          <Leaderboard onBack={handleTryAgain} />
         )}
       </main>
 
