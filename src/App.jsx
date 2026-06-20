@@ -119,26 +119,29 @@ export default function App() {
   const handleVote = useCallback((model) => {
     setWinner(model);
     
-    // Asynchronously record vote
+    // Asynchronously record vote to Supabase (fire-and-forget)
     if (modelA && modelB && currentCategory) {
       let voteResult;
       if (model.id === modelA.id) voteResult = 'a';
       else if (model.id === modelB.id) voteResult = 'b';
-      else voteResult = model.id; // 'tie' or 'neither'
-      
-      if (voteResult === 'neither') voteResult = 'both_bad';
+      else if (model.id === 'tie') voteResult = 'tie';
+      else voteResult = 'both_bad';
 
-      supabase.from('votes').insert({
-        category: currentCategory.id || currentCategory,
-        model_a_id: modelA.id,
-        model_a_provider: modelA.provider,
-        model_b_id: modelB.id,
-        model_b_provider: modelB.provider,
-        winner: voteResult
-      }).catch(err => {
-        // silent fail
-        console.error("Failed to record vote:", err);
-      });
+      (async () => {
+        try {
+          const { error } = await supabase.from('votes').insert({
+            category: currentCategory.id || currentCategory,
+            model_a_id: modelA.id,
+            model_a_provider: modelA.provider,
+            model_b_id: modelB.id,
+            model_b_provider: modelB.provider,
+            winner: voteResult
+          });
+          if (error) console.error("Supabase insert error:", error);
+        } catch (err) {
+          console.error("Failed to record vote:", err);
+        }
+      })();
     }
   }, [modelA, modelB, currentCategory]);
 
