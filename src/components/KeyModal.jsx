@@ -1,10 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getKeys, saveKeys } from '../utils/storage';
 
 export default function KeyModal({ isOpen, onClose, onSave }) {
-  const existingKeys = getKeys();
-  const [openRouterKey, setOpenRouterKey] = useState(existingKeys.openRouterKey);
-  const [huggingFaceKey, setHuggingFaceKey] = useState(existingKeys.huggingFaceKey);
+  const [openRouterKey, setOpenRouterKey] = useState('');
+  const [huggingFaceKey, setHuggingFaceKey] = useState('');
+
+  // Re-sync from localStorage every time the modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const existing = getKeys();
+      setOpenRouterKey(existing.openRouterKey);
+      setHuggingFaceKey(existing.huggingFaceKey);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

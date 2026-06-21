@@ -56,7 +56,7 @@ export default function BattleView({
 
       {/* Output Columns */}
       <div className="battle-columns">
-        <div className={`battle-column column-a ${winner && winner === modelA ? 'winner-column' : ''} ${winner && winner !== modelA ? 'loser-column' : ''}`}>
+        <div className={`battle-column column-a ${winner && winner.id === modelA.id ? 'winner-column' : ''} ${winner && winner.id !== modelA.id ? 'loser-column' : ''}`}>
           <div className="column-header">
             <span className="column-badge badge-a">A</span>
             <span className="column-model-name">{modelA.name}</span>
@@ -79,7 +79,7 @@ export default function BattleView({
           <div className="divider-line"></div>
         </div>
 
-        <div className={`battle-column column-b ${winner && winner === modelB ? 'winner-column' : ''} ${winner && winner !== modelB ? 'loser-column' : ''}`}>
+        <div className={`battle-column column-b ${winner && winner.id === modelB.id ? 'winner-column' : ''} ${winner && winner.id !== modelB.id ? 'loser-column' : ''}`}>
           <div className="column-header">
             <span className="column-badge badge-b">B</span>
             <span className="column-model-name">{modelB.name}</span>

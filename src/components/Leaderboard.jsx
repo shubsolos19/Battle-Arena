@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
 import { OPENROUTER_MODELS, HUGGINGFACE_MODELS } from '../constants/models';
 import { RefreshCw } from 'lucide-react';
 
@@ -11,6 +11,39 @@ const CATEGORIES = [
   { id: 'story', label: 'Story' },
   { id: 'summary', label: 'Summary' },
 ];
+
+// Defined OUTSIDE the component so React doesn't re-create them every render
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    const d = payload[0].payload;
+    return (
+      <div className="bg-zinc-900 border border-zinc-700 p-3 rounded-lg shadow-xl text-sm">
+        <p className="font-bold text-zinc-100 mb-1">{d.modelName}</p>
+        <p className="text-zinc-400">Win Rate: <span className="text-purple-400 font-medium">{d.winRateFormatted}</span></p>
+        <p className="text-zinc-400">Total Battles: <span className="text-zinc-200">{d.total}</span></p>
+        <p className="text-zinc-400">Wins: <span className="text-zinc-200">{d.wins}</span></p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const renderBarLabel = (props) => {
+  const { x, y, width, height, value } = props;
+  if (!width || width < 60) return null;
+  return (
+    <text
+      x={x + width - 10}
+      y={y + height / 2}
+      fill="#ffffff"
+      textAnchor="end"
+      dominantBaseline="middle"
+      fontSize={11}
+    >
+      {typeof value === 'number' ? value.toFixed(1) + '%' : ''}
+    </text>
+  );
+};
 
 export default function Leaderboard({ onBack }) {
   const [category, setCategory] = useState('all');
@@ -29,19 +62,19 @@ export default function Leaderboard({ onBack }) {
           throw new Error(errData.error || `HTTP error ${res.status}`);
         }
         const json = await res.json();
-        
+
         // Map raw model_ids to human-readable names
         const allModels = [...OPENROUTER_MODELS, ...HUGGINGFACE_MODELS];
-        const enrichedData = json.map((item, index) => {
+        const enrichedData = (Array.isArray(json) ? json : []).map((item, index) => {
           const modelDef = allModels.find(m => m.id === item.model_id);
           return {
             ...item,
             rank: index + 1,
             modelName: modelDef ? modelDef.name : item.model_id,
-            winRateFormatted: item.win_rate.toFixed(1) + '%',
+            winRateFormatted: typeof item.win_rate === 'number' ? item.win_rate.toFixed(1) + '%' : '0%',
           };
         });
-        
+
         setData(enrichedData);
       } catch (err) {
         console.error(err);
@@ -53,45 +86,13 @@ export default function Leaderboard({ onBack }) {
     fetchLeaderboard();
   }, [category]);
 
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-zinc-900 border border-zinc-700 p-3 rounded-lg shadow-xl text-sm">
-          <p className="font-bold text-zinc-100 mb-1">{data.modelName}</p>
-          <p className="text-zinc-400">Win Rate: <span className="text-purple-400 font-medium">{data.winRateFormatted}</span></p>
-          <p className="text-zinc-400">Total Battles: <span className="text-zinc-200">{data.total}</span></p>
-          <p className="text-zinc-400">Wins: <span className="text-zinc-200">{data.wins}</span></p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const CustomBarLabel = (props) => {
-    const { x, y, width, height, value, index, payload } = props;
-    if (width < 50) return null; // Don't show label if bar is too short
-    return (
-      <text 
-        x={x + width - 10} 
-        y={y + height / 2} 
-        fill="#ffffff" 
-        textAnchor="end" 
-        dominantBaseline="middle"
-        className="text-[10px] sm:text-xs font-medium"
-      >
-        {value.toFixed(1)}% ({payload.total} votes)
-      </text>
-    );
-  };
-
   return (
     <div className="flex flex-col w-full max-w-5xl mx-auto px-4 py-8 text-zinc-300">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
         <div>
-          <button 
+          <button
             onClick={onBack}
             className="text-zinc-500 hover:text-white transition-colors text-sm mb-4 flex items-center gap-2"
           >
@@ -102,7 +103,7 @@ export default function Leaderboard({ onBack }) {
         </div>
 
         <div className="w-full sm:w-auto">
-          <select 
+          <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="w-full sm:w-48 bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-2.5 outline-none transition-colors"
@@ -127,7 +128,7 @@ export default function Leaderboard({ onBack }) {
         <div className="w-full flex flex-col items-center justify-center py-20 bg-zinc-900/50 rounded-xl border border-zinc-800">
           <p className="text-lg text-zinc-300 mb-4">No battles recorded yet.</p>
           <p className="text-zinc-500 mb-6">Be the first to vote and put a model on the board!</p>
-          <button 
+          <button
             onClick={onBack}
             className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium"
           >
@@ -137,7 +138,7 @@ export default function Leaderboard({ onBack }) {
       ) : (
         <>
           {/* Chart Section */}
-          <div className="w-full h-[400px] bg-zinc-900/30 border border-zinc-800 rounded-xl p-4 sm:p-6 mb-8">
+          <div className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl p-4 sm:p-6 mb-8" style={{ height: Math.max(300, data.length * 50 + 60) }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={data}
@@ -151,34 +152,34 @@ export default function Leaderboard({ onBack }) {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#27272a" />
-                <XAxis 
-                  type="number" 
-                  domain={[0, 100]} 
-                  stroke="#71717a" 
+                <XAxis
+                  type="number"
+                  domain={[0, 100]}
+                  stroke="#71717a"
                   fontSize={12}
                   tickFormatter={(val) => `${val}%`}
                 />
-                <YAxis 
-                  dataKey="modelName" 
-                  type="category" 
-                  width={150} 
-                  stroke="#71717a" 
+                <YAxis
+                  dataKey="modelName"
+                  type="category"
+                  width={150}
+                  stroke="#71717a"
                   fontSize={12}
                   tick={{ fill: '#a1a1aa' }}
                 />
                 <Tooltip cursor={{ fill: '#27272a', opacity: 0.4 }} content={<CustomTooltip />} />
-                <Bar 
-                  dataKey="win_rate" 
+                <Bar
+                  dataKey="win_rate"
                   radius={[0, 4, 4, 0]}
                   barSize={24}
+                  label={renderBarLabel}
                 >
                   {data.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={index < 3 ? "url(#topGradient)" : "#52525b"} 
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={index < 3 ? "url(#topGradient)" : "#52525b"}
                     />
                   ))}
-                  <CustomBarLabel />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>

@@ -26,8 +26,10 @@ export default async function handler(req, res) {
   }
   const { data: votes, error } = await query
   if (error) return res.status(500).json({ error: error.message })
+  if (!votes || votes.length === 0) return res.status(200).json([])
 
   // Aggregate: for each model_id, count appearances and wins
+  // tie/both_bad votes count toward total but NOT as wins for either model
   const stats = {}
   for (const vote of votes) {
     for (const side of ['a', 'b']) {

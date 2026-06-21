@@ -35,7 +35,7 @@ export default function PromptBox({ onSubmit, disabled }) {
             className="relative flex items-center justify-center z-10 w-20 h-20 shrink-0"
             animate={{
               y: isFocused ? 50 : 0,
-              opacity: isFocused ? 0 : 100,
+              opacity: isFocused ? 0 : 1,
               filter: isFocused ? "blur(4px)" : "blur(0px)",
               rotation: isFocused ? 180 : 0,
             }}
@@ -94,7 +94,7 @@ export default function PromptBox({ onSubmit, disabled }) {
             className="text-white/40 text-xs sm:text-sm font-light z-10 ml-0 sm:ml-4 flex-1"
             animate={{
               y: isFocused ? 50 : 0,
-              opacity: isFocused ? 0 : 100,
+              opacity: isFocused ? 0 : 1,
               filter: isFocused ? "blur(4px)" : "blur(0px)",
             }}
             transition={{
@@ -150,7 +150,7 @@ export default function PromptBox({ onSubmit, disabled }) {
                         <SelectValue />
                       </div>
                     </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 z-50 border-[#3D3D3D] rounded-xl z-30">
+                    <SelectContent className="bg-zinc-900 z-50 border-[#3D3D3D] rounded-xl">
                       {CATEGORIES.map((cat) => (
                         <SelectItem key={cat.id} value={cat.id} className="text-white hover:bg-zinc-700 rounded-lg pl-8 py-2">
                           {cat.label}

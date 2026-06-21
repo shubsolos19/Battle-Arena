@@ -4,7 +4,7 @@ export async function callOpenRouter(apiKey, modelId, systemPrompt, userPrompt) 
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://duelai.vercel.app',
+      'HTTP-Referer': 'https://battle-arena-gamma.vercel.app',
     },
     body: JSON.stringify({
       model: modelId,
@@ -22,6 +22,9 @@ export async function callOpenRouter(apiKey, modelId, systemPrompt, userPrompt) 
   }
 
   const data = await response.json();
+  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    throw new Error(`OpenRouter returned unexpected response: ${JSON.stringify(data).slice(0, 200)}`);
+  }
   return data.choices[0].message.content;
 }
 
@@ -48,6 +51,9 @@ export async function callHuggingFace(apiKey, modelId, systemPrompt, userPrompt)
   }
 
   const data = await response.json();
+  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    throw new Error(`HuggingFace returned unexpected response: ${JSON.stringify(data).slice(0, 200)}`);
+  }
   return data.choices[0].message.content;
 }
 

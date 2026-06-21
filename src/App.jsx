@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import PromptBox from './components/PromptBox';
 import KeyModal from './components/KeyModal';
 import BattleView from './components/BattleView';
@@ -157,7 +157,17 @@ export default function App() {
     setLoadingB(false);
     setWinner(null);
     setCurrentPrompt('');
+    setCurrentCategory(null);
   }, []);
+
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape' && showKeyModal) setShowKeyModal(false);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showKeyModal]);
 
   return (
     <div className="app">
@@ -177,12 +187,13 @@ export default function App() {
             <p className="app-subtitle"></p>
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="header-nav">
           <button
             onClick={() => setPhase('leaderboard')}
-            className="text-zinc-400 hover:text-white transition-colors text-sm font-medium"
+            className="update-keys-btn"
+            title="View Leaderboard"
           >
-            🏆 Leaderboard
+            🏆 <span className="keys-btn-text">Leaderboard</span>
           </button>
           <button
             id="update-keys-btn"
@@ -228,7 +239,6 @@ export default function App() {
             winner={winner}
             prompt={currentPrompt}
             onTryAgain={handleTryAgain}
-            onNewPrompt={handleSubmit}
           />
         )}
 
