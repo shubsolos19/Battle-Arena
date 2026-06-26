@@ -1,5 +1,5 @@
 import OutputRenderer from './OutputRenderer';
-
+import { Swords, Trophy, RefreshCw, ArrowLeft, Handshake, ThumbsDown, ArrowRight } from 'lucide-react';
 const PROVIDER_LABELS = {
   openrouter: 'OpenRouter',
   huggingface: 'Hugging Face',
@@ -27,7 +27,7 @@ export default function BattleView({
       {/* Battle Header */}
       <div className="battle-header">
         <div className="battle-title">
-          <span className="battle-swords">⚔️</span>
+          <span className="battle-swords"><Swords className="w-6 h-6 text-sky-400 inline-block" /></span>
           <span className="model-a-name">{modelA.name}</span>
           <span className="battle-vs">vs</span>
           <span className="model-b-name">{modelB.name}</span>
@@ -39,7 +39,7 @@ export default function BattleView({
       {winner && (
         <div className="winner-banner">
           <div className="winner-content">
-            <span className="winner-trophy">🏆</span>
+            <span className="winner-trophy"><Trophy className="w-6 h-6 text-yellow-400 inline-block" /></span>
             <span className="winner-text">
               You picked <strong>{winner.name}</strong>!
             </span>
@@ -49,7 +49,7 @@ export default function BattleView({
             onClick={onTryAgain}
             className="try-again-btn"
           >
-            <span>↺</span> Try Again
+            <span className="inline-flex items-center gap-1"><RefreshCw className="w-4 h-4" /> Try Again</span>
           </button>
         </div>
       )}
@@ -108,7 +108,7 @@ export default function BattleView({
               className="vote-btn vote-btn-a"
               disabled={!outputA}
             >
-              <span className="vote-arrow">👈</span>
+              <span className="vote-arrow"><ArrowLeft className="w-4 h-4" /></span>
               <span className="vote-name">{modelA.name}</span>
             </button>
             
@@ -118,7 +118,7 @@ export default function BattleView({
               className="vote-btn vote-btn-tie"
               disabled={!outputA || !outputB}
             >
-              <span className="vote-name">Both are good 🤝</span>
+              <span className="vote-name flex items-center justify-center gap-2">Both are good <Handshake className="w-4 h-4" /></span>
             </button>
 
             <button
@@ -127,7 +127,7 @@ export default function BattleView({
               className="vote-btn vote-btn-neither"
               disabled={!outputA || !outputB}
             >
-              <span className="vote-name">Both are bad 👎</span>
+              <span className="vote-name flex items-center justify-center gap-2">Both are bad <ThumbsDown className="w-4 h-4" /></span>
             </button>
 
             <button
@@ -137,7 +137,7 @@ export default function BattleView({
               disabled={!outputB}
             >
               <span className="vote-name">{modelB.name}</span>
-              <span className="vote-arrow">👉</span>
+              <span className="vote-arrow"><ArrowRight className="w-4 h-4" /></span>
             </button>
           </div>
         </div>

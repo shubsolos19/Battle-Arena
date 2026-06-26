@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getKeys, saveKeys } from '../utils/storage';
+import { Key, Zap } from 'lucide-react';
 
 export default function KeyModal({ isOpen, onClose, onSave }) {
   const [openRouterKey, setOpenRouterKey] = useState('');
@@ -30,7 +31,7 @@ export default function KeyModal({ isOpen, onClose, onSave }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <div className="modal-icon">🔑</div>
+          <div className="modal-icon"><Key className="w-10 h-10 text-sky-400 mx-auto" /></div>
           <h2 className="modal-title">API Keys</h2>
           <p className="modal-subtitle">
             Your keys are stored locally in your browser.
@@ -70,8 +71,8 @@ export default function KeyModal({ isOpen, onClose, onSave }) {
               <span className="label-dot huggingface-dot"></span>
               Hugging Face API Token
             </label>
-            <div className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 p-2.5 rounded-md mb-3 mt-1 leading-relaxed">
-              <strong>Important:</strong> When creating your token, make sure to tick the option <strong>"Make calls to Inference Providers"</strong> so the key can work.
+            <div className="warning-box">
+              <strong style={{ color: '#f59e0b' }}>Important:</strong> When creating your token, make sure to tick the option <strong style={{ color: '#f59e0b' }}>"Make calls to Inference Providers"</strong> so the key can work.
             </div>
             <input
               id="huggingface-key"
@@ -100,7 +101,7 @@ export default function KeyModal({ isOpen, onClose, onSave }) {
             disabled={!canSave}
             className="save-btn"
           >
-            Save & Generate ⚡
+            Save & Generate <Zap className="w-4 h-4 inline-block ml-1" />
           </button>
         </div>
       </div>

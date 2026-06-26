@@ -8,6 +8,7 @@ import { callModel } from './utils/api';
 import { OPENROUTER_MODELS, HUGGINGFACE_MODELS } from './constants/models';
 import { supabase } from './utils/supabaseClient';
 import Leaderboard from './components/Leaderboard';
+import { Swords, Trophy, Key } from 'lucide-react';
 
 async function generateWithModelFallback(initialModel, allModels, callFn, provider, apiKey, systemPrompt, userPrompt) {
   const otherModels = allModels.filter(m => m.id !== initialModel.id).sort(() => Math.random() - 0.5);
@@ -28,7 +29,33 @@ async function generateWithModelFallback(initialModel, allModels, callFn, provid
 
 // States: landing | loading | battle | result
 export default function App() {
-  const [phase, setPhase] = useState('landing');
+  const [phase, setPhase] = useState(() => {
+    return window.location.hash === '#leaderboard' ? 'leaderboard' : 'landing';
+  });
+
+  // Sync phase to URL hash
+  useEffect(() => {
+    if (phase === 'leaderboard') {
+      window.location.hash = 'leaderboard';
+    } else if (window.location.hash === '#leaderboard') {
+      window.history.replaceState(null, null, window.location.pathname);
+    }
+  }, [phase]);
+
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#leaderboard') {
+        setPhase('leaderboard');
+      } else if (window.location.hash === '' || window.location.hash === '#') {
+        // If we are in battle, don't immediately kill it on hash change unless it's explicitly to landing.
+        // Actually, easiest is just to go to landing if hash is empty and we were on leaderboard
+        setPhase(prev => prev === 'leaderboard' ? 'landing' : prev);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
   const [showKeyModal, setShowKeyModal] = useState(false);
 
   // Battle state
@@ -171,6 +198,13 @@ export default function App() {
 
   return (
     <div className="app">
+      {/* Ambient background orbs */}
+      <div className="ambient-orbs">
+        <div className="orb orb-1"></div>
+        <div className="orb orb-2"></div>
+        <div className="orb orb-3"></div>
+      </div>
+
       {/* Header */}
       <header className="app-header">
         <div className="header-left">
@@ -180,12 +214,9 @@ export default function App() {
             style={{ cursor: 'pointer' }}
             title="Go to main page"
           >
-            <span className="logo-icon">⚔️</span>
+            <Swords className="w-6 h-6 text-sky-400" />
             <span className="logo-text">Modelfight</span>
           </h1>
-          {phase === 'landing' && (
-            <p className="app-subtitle"></p>
-          )}
         </div>
         <div className="header-nav">
           <button
@@ -193,7 +224,7 @@ export default function App() {
             className="update-keys-btn"
             title="View Leaderboard"
           >
-            🏆 <span className="keys-btn-text">Leaderboard</span>
+            <Trophy className="w-4 h-4" /> <span>Leaderboard</span>
           </button>
           <button
             id="update-keys-btn"
@@ -201,7 +232,7 @@ export default function App() {
             className="update-keys-btn"
             title="Update API Keys"
           >
-            🔑 <span className="keys-btn-text">Keys</span>
+            <Key className="w-4 h-4" /> <span>Keys</span>
           </button>
         </div>
       </header>
@@ -211,13 +242,12 @@ export default function App() {
         {phase === 'landing' && (
           <div className="landing-container">
             <div className="landing-hero">
+              <span className="hero-badge">AI Model Arena</span>
               <h2 className="hero-title">
-                The AI Arena
+                Battle of the Titans
               </h2>
               <p className="hero-desc">
-                Two models, One prompt
-                <br />
-                You decide
+                Two elite AI models face off in real-time. Give them a prompt and decide which one reigns supreme.
               </p>
             </div>
             <PromptBox onSubmit={handleSubmit} disabled={false} />
@@ -253,10 +283,6 @@ export default function App() {
         onClose={() => setShowKeyModal(false)}
         onSave={handleKeysSaved}
       />
-
-      {/* Footer glow */}
-      <div className="glow-effect glow-top-left"></div>
-      <div className="glow-effect glow-bottom-right"></div>
     </div>
   );
 }

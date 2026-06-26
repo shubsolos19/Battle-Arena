@@ -1,16 +1,53 @@
 import { useState, useEffect } from 'react';
 import { CATEGORIES } from '../constants/categories';
-import { LiquidMetal } from '@paper-design/shaders-react';
+import { Sparkles, ArrowRight, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Brain, Link, ArrowRight } from 'lucide-react';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+
+const PLACEHOLDERS = [
+  "Describe your vision, ask a complex question, or challenge the models...",
+  "Write a savage but funny roast about your favorite tech stack...",
+  "Write a short creative story about an AI taking over the world...",
+  "Write a beautiful poem about the ocean and stars...",
+  "Explain quantum computing like I am 5 years old..."
+];
 
 export default function PromptBox({ onSubmit, disabled }) {
   const [prompt, setPrompt] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0].id);
+  const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]?.id || 'text');
   const [isFocused, setIsFocused] = useState(false);
+  
+  const [placeholderText, setPlaceholderText] = useState("");
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    let timeout;
+    const currentPhrase = PLACEHOLDERS[phraseIndex];
+    
+    if (isDeleting) {
+      if (placeholderText.length > 0) {
+        timeout = setTimeout(() => {
+          setPlaceholderText(currentPhrase.substring(0, placeholderText.length - 1));
+        }, 20); // Fast backspace
+      } else {
+        setIsDeleting(false);
+        setPhraseIndex((prev) => (prev + 1) % PLACEHOLDERS.length);
+        timeout = setTimeout(() => {}, 300);
+      }
+    } else {
+      if (placeholderText.length < currentPhrase.length) {
+        timeout = setTimeout(() => {
+          setPlaceholderText(currentPhrase.substring(0, placeholderText.length + 1));
+        }, 60); // Typing speed
+      } else {
+        timeout = setTimeout(() => {
+          setIsDeleting(true);
+        }, 2500); // Pause before delete
+      }
+    }
+    
+    return () => clearTimeout(timeout);
+  }, [placeholderText, isDeleting, phraseIndex]);
 
   const handleSubmit = () => {
     if (!prompt.trim() || disabled) return;
@@ -26,158 +63,60 @@ export default function PromptBox({ onSubmit, disabled }) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full p-4">
-      <div className="w-full max-w-5xl relative">
-        <div className="flex flex-row items-center mb-2">
-          {/* Shader Circle */}
-          <motion.div
-            id="circle-ball"
-            className="relative flex items-center justify-center z-10 w-20 h-20 shrink-0"
-            animate={{
-              y: isFocused ? 50 : 0,
-              opacity: isFocused ? 0 : 1,
-              filter: isFocused ? "blur(4px)" : "blur(0px)",
-              rotation: isFocused ? 180 : 0,
-            }}
-            transition={{
-              duration: 0.5,
-              type: "spring",
-              stiffness: 200,
-              damping: 20,
-            }}
-          >
-            <div className="z-10 absolute bg-white/5 h-11 w-11 rounded-full backdrop-blur-[3px]">
-              <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-4 left-4  blur-[1px]" />
-              <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-3 left-7  blur-[0.8px]" />
-              <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-8 left-2  blur-[1px]" />
-              <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-5 left-9 blur-[0.8px]" />
-              <div className="h-[2px] w-[2px] bg-white rounded-full absolute top-7 left-7  blur-[1px]" />
-            </div>
-            <LiquidMetal
-              style={{ height: 80, width: 80, filter: "blur(14px)", position: "absolute" }}
-                  colorBack="hsl(0, 0%, 0%, 0)"
-                  colorTint="hsl(29, 77%, 49%)"
-                  repetition={4}
-                  softness={0.5}
-                  shiftRed={0.3}
-                  shiftBlue={0.3}
-                  distortion={0.1}
-                  contour={1}
-                  shape="circle"
-                  offsetX={0}
-                  offsetY={0}
-                  scale={0.58}
-                  rotation={50}
-                  speed={5}
-                />
-                <LiquidMetal
-                  style={{ height: 80, width: 80 }}
-                  colorBack="hsl(0, 0%, 0%, 0)"
-                  colorTint="hsl(29, 77%, 49%)"
-                  repetition={4}
-                  softness={0.5}
-                  shiftRed={0.3}
-                  shiftBlue={0.3}
-                  distortion={0.1}
-                  contour={1}
-                  shape="circle"
-                  offsetX={0}
-                  offsetY={0}
-                  scale={0.58}
-                  rotation={50}
-                  speed={5}
-                />
-          </motion.div>
-
-          {/* Greeting Text */}
-          <motion.p
-            className="text-white/40 text-xs sm:text-sm font-light z-10 ml-0 sm:ml-4 flex-1"
-            animate={{
-              y: isFocused ? 50 : 0,
-              opacity: isFocused ? 0 : 1,
-              filter: isFocused ? "blur(4px)" : "blur(0px)",
-            }}
-            transition={{
-              duration: 0.5,
-              type: "spring",
-              stiffness: 200,
-              damping: 20,
-            }}
-          >
-            Hey there! I'm here to help with anything you need
-          </motion.p>
+    <div className="prompt-container">
+      {/* Greeting or sub-text above the box */}
+      <motion.div 
+        className="flex justify-center mb-6"
+        animate={{ opacity: isFocused ? 0.3 : 1, y: isFocused ? -5 : 0 }}
+      >
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+          <Sparkles className="w-4 h-4 text-sky-400" />
+          <span className="text-sm font-medium text-sky-100/80 tracking-wide">AI Models Ready for Battle</span>
         </div>
+      </motion.div>
 
-        <div className="relative">
-          <div
-            className={`relative rounded-2xl p-5 z-10 transition-colors duration-500 bg-[#040404] ${isFocused ? 'prompt-box-focused border-transparent' : 'border-[#3D3D3D]'}`}
-            style={{
-              borderWidth: "1px",
-              borderStyle: "solid",
-            }}
-          >
-            {/* Message Input */}
-            <div className="relative mb-6">
-              <Textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder=""
-                disabled={disabled}
-                className="min-h-[100px] resize-none bg-transparent border-none text-white text-base placeholder:text-zinc-500 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none [&:focus]:ring-0 [&:focus]:outline-none [&:focus-visible]:ring-0 [&:focus-visible]:outline-none"
-                style={{ padding: '12px 16px' }}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-              />
-            </div>
+      <div className="glass-panel">
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder={placeholderText}
+          disabled={disabled}
+          className="prompt-textarea"
+        />
 
-            <div className="flex items-center justify-between px-6 pb-4">
-              {/* Left side icons */}
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-9 w-9 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-100 hover:text-white p-0"
-                >
-                  <Brain className="h-4 w-4" />
-                </Button>
-                {/* Center model selector */}
-                <div className="flex items-center">
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory} disabled={disabled}>
-                    <SelectTrigger className="bg-zinc-900 border-[#3D3D3D] text-white hover:bg-zinc-700 text-xs rounded-full px-2 h-8 min-w-[150px]">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">⚡</span>
-                        <SelectValue />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 z-50 border-[#3D3D3D] rounded-xl">
-                      {CATEGORIES.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id} className="text-white hover:bg-zinc-700 rounded-lg pl-8 py-2">
-                          {cat.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Right side icons */}
-              <div className="flex items-center gap-3">
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!prompt.trim() || disabled}
-                  variant="ghost"
-                  size="sm"
-                  className="h-10 w-10 rounded-full bg-orange-200 hover:bg-orange-300 text-orange-800 p-0 disabled:opacity-50"
-                  title="Submit"
-                >
-                  <ArrowRight className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
+        <div className="prompt-actions">
+          <div className="prompt-controls">
+            <button type="button" className="glass-btn" title="AI Assistant">
+              <Activity className="w-5 h-5 text-sky-300" />
+            </button>
+            
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              disabled={disabled}
+              className="glass-select outline-none appearance-none cursor-pointer"
+            >
+              {CATEGORIES.map((cat) => (
+                <option key={cat.id} value={cat.id} className="bg-slate-900 text-white p-2">
+                  {cat.label}
+                </option>
+              ))}
+            </select>
           </div>
+
+          <button
+            onClick={handleSubmit}
+            disabled={!prompt.trim() || disabled}
+            className="submit-btn"
+            title="Start Battle"
+          >
+            <ArrowRight className="w-6 h-6" />
+          </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
