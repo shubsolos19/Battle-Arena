@@ -1,6 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import PromptBox from './components/PromptBox';
 import KeyModal from './components/KeyModal';
+import VariableProximity from './components/VariableProximity';
 import BattleView from './components/BattleView';
 import { hasKeys, getKeys } from './utils/storage';
 import { pickRandomModels } from './utils/modelPicker';
@@ -9,6 +11,7 @@ import { OPENROUTER_MODELS, HUGGINGFACE_MODELS } from './constants/models';
 import { supabase } from './utils/supabaseClient';
 import Leaderboard from './components/Leaderboard';
 import { Swords, Trophy, Key } from 'lucide-react';
+import ClickSpark from './components/ClickSpark';
 
 async function generateWithModelFallback(initialModel, allModels, callFn, provider, apiKey, systemPrompt, userPrompt) {
   const otherModels = allModels.filter(m => m.id !== initialModel.id).sort(() => Math.random() - 0.5);
@@ -32,6 +35,8 @@ export default function App() {
   const [phase, setPhase] = useState(() => {
     return window.location.hash === '#leaderboard' ? 'leaderboard' : 'landing';
   });
+  
+  const containerRef = useRef(null);
 
   // Sync phase to URL hash
   useEffect(() => {
@@ -198,11 +203,15 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* Ambient background orbs */}
+      <ClickSpark sparkColor='#38bdf8' sparkSize={10} sparkRadius={15} sparkCount={8} duration={400}>
+        {/* Ambient background orbs */}
       <div className="ambient-orbs">
+        <div className="grid-overlay"></div>
+        <div className="noise-overlay"></div>
         <div className="orb orb-1"></div>
         <div className="orb orb-2"></div>
         <div className="orb orb-3"></div>
+        <div className="orb orb-4"></div>
       </div>
 
       {/* Header */}
@@ -239,42 +248,85 @@ export default function App() {
 
       {/* Main Content */}
       <main className="app-main">
-        {phase === 'landing' && (
-          <div className="landing-container">
-            <div className="landing-hero">
-              <span className="hero-badge">AI Model Arena</span>
-              <h2 className="hero-title">
-                Battle of the Titans
-              </h2>
-              <p className="hero-desc">
-                Two elite AI models face off in real-time. Give them a prompt and decide which one reigns supreme.
-              </p>
-            </div>
-            <PromptBox onSubmit={handleSubmit} disabled={false} />
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {phase === 'landing' && (
+            <motion.div
+              key="landing"
+              className="landing-container"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <div className="landing-hero" ref={containerRef} style={{ position: 'relative' }}>
+                <h2 className="hero-title">
+                  {"Battle of the Titans".split(" ").map((word, index) => (
+                    <motion.span
+                      key={index}
+                      className="hero-word"
+                      initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }}
+                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                      transition={{ delay: index * 0.12, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                      style={{ display: 'inline-block', marginRight: '0.2em' }}
+                    >
+                      {word}
+                    </motion.span>
+                  ))}
+                </h2>
+                <div className="hero-desc flex justify-center w-full">
+                  <VariableProximity
+                    label={"Two elite AI models face off in real-time. Give them a prompt and decide which one reigns supreme."}
+                    className={'variable-proximity-demo'}
+                    fromFontVariationSettings="'wght' 400, 'opsz' 9"
+                    toFontVariationSettings="'wght' 1000, 'opsz' 40"
+                    containerRef={containerRef}
+                    radius={80}
+                    falloff='linear'
+                  />
+                </div>
+              </div>
+              <PromptBox onSubmit={handleSubmit} disabled={false} />
+            </motion.div>
+          )}
 
-        {phase === 'battle' && modelA && modelB && (
-          <BattleView
-            modelA={modelA}
-            modelB={modelB}
-            outputA={outputA}
-            outputB={outputB}
-            errorA={errorA}
-            errorB={errorB}
-            loadingA={loadingA}
-            loadingB={loadingB}
-            renderType={renderType}
-            onVote={handleVote}
-            winner={winner}
-            prompt={currentPrompt}
-            onTryAgain={handleTryAgain}
-          />
-        )}
+          {phase === 'battle' && modelA && modelB && (
+            <motion.div
+              key="battle"
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <BattleView
+                modelA={modelA}
+                modelB={modelB}
+                outputA={outputA}
+                outputB={outputB}
+                errorA={errorA}
+                errorB={errorB}
+                loadingA={loadingA}
+                loadingB={loadingB}
+                renderType={renderType}
+                onVote={handleVote}
+                winner={winner}
+                prompt={currentPrompt}
+                onTryAgain={handleTryAgain}
+              />
+            </motion.div>
+          )}
 
-        {phase === 'leaderboard' && (
-          <Leaderboard onBack={handleTryAgain} />
-        )}
+          {phase === 'leaderboard' && (
+            <motion.div
+              key="leaderboard"
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <Leaderboard onBack={handleTryAgain} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Key Modal */}
@@ -283,6 +335,7 @@ export default function App() {
         onClose={() => setShowKeyModal(false)}
         onSave={handleKeysSaved}
       />
+      </ClickSpark>
     </div>
   );
 }
